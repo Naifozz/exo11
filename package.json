@@ -1,0 +1,14 @@
+{
+    "name": "exo11",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js",
+        "init-db": "node sql/seed.js",
+        "reset-db": "rm -f database.db && node sql/seed.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": ""
+}
