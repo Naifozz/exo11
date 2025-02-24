@@ -1,0 +1,12 @@
+=== ERROR LOG [d890945b] ===
+Timestamp: 2025-02-24T08:27:41.005Z
+Message: Cannot read properties of undefined (reading 'catch')
+Stack: TypeError: Cannot read properties of undefined (reading 'catch')
+    at res.end (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:72:66)
+    at Server.<anonymous> (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:95:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+=== REQUEST INFO ===
+Method: GET
+URL: /
+Request ID: 133ad994

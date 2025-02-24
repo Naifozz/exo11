@@ -1,0 +1,7 @@
+=== ERROR LOG [e6ea8b7e] ===
+Timestamp: 2025-02-24T10:43:39.403Z
+Message: Cannot read properties of undefined (reading 'name')
+Stack: TypeError: Cannot read properties of undefined (reading 'name')
+    at createUsers (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/articles.js:271:75)
+    at async handleUsersRequest (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/articles.js:203:17)
+    at async Server.<anonymous> (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:60:13)

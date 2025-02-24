@@ -1,0 +1,12 @@
+=== ERROR LOG [7432c8eb] ===
+Timestamp: 2025-02-24T10:43:39.404Z
+Message: Cannot write headers after they are sent to the client
+Stack: Error [ERR_HTTP_HEADERS_SENT]: Cannot write headers after they are sent to the client
+    at ServerResponse.writeHead (node:_http_server:351:11)
+    at createUsers (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/articles.js:301:13)
+    at async handleUsersRequest (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/articles.js:203:17)
+    at async Server.<anonymous> (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:60:13)
+
+=== REQUEST INFO ===
+Method: POST
+URL: /users

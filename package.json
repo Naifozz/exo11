@@ -2,6 +2,7 @@
     "name": "exo11",
     "version": "1.0.0",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "start": "node server.js",
         "dev": "node --watch server.js",
@@ -10,5 +11,9 @@
     },
     "author": "",
     "license": "ISC",
-    "description": ""
+    "description": "",
+    "dependencies": {
+        "sqlite": "^5.1.1",
+        "sqlite3": "^5.1.7"
+    }
 }

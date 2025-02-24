@@ -1,0 +1,4 @@
+=== ERROR LOG [9c51d79f] ===
+Timestamp: 2025-02-24T10:27:20.441Z
+Message: SQLITE_ERROR: 3 values for 4 columns
+Stack: Error: SQLITE_ERROR: 3 values for 4 columns
