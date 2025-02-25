@@ -1,0 +1,11 @@
+=== ERROR LOG [5117ea59] ===
+Timestamp: 2025-02-24T13:52:11.362Z
+Message: getUserArticles is not defined
+Stack: ReferenceError: getUserArticles is not defined
+    at handleUsersRequest (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/users.js:11:17)
+    at Server.<anonymous> (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:61:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+=== REQUEST INFO ===
+Method: GET
+URL: /users/1/articles

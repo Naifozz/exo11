@@ -1,11 +1,15 @@
 import { openDb } from "../utils/db.js";
 import { logError } from "../utils/logger.js";
-
+import { validateEmail } from "../utils/validator.js";
 export async function handleUsersRequest(req, res) {
     switch (req.method) {
         case "GET":
             if (req.url === "/users") {
                 await getAllUsers(req, res);
+            } else if (req.url.match(/^\/users\/\d+\/articles$/)) {
+                const id = req.url.split("/")[2];
+
+                await getUserArticles(req, res, id);
             } else {
                 const id = req.url.split("/")[2];
                 await getUsersById(req, res, id);
@@ -73,6 +77,36 @@ async function getUsersById(req, res, id) {
         res.end(JSON.stringify({ error: "Internal Server Error" }));
     }
 }
+async function getUserArticles(req, res, id) {
+    try {
+        const db = await openDb();
+        const user = await db.get("SELECT * FROM users WHERE id = ?", [id]);
+
+        if (!user) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "User not found" }));
+            return;
+        }
+
+        const userArticle = await db.all("SELECT * FROM articles WHERE user_id = ?", [id]);
+
+        if (!userArticle) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Cet utilisateur n'a pas d'article" }));
+            return;
+        }
+        const response = {
+            user: user,
+            articles: userArticle,
+        };
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        await logError(error);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal Server Error" }));
+    }
+}
 
 async function createUsers(req, res, body) {
     try {
@@ -89,6 +123,7 @@ async function createUsers(req, res, body) {
             res.end(JSON.stringify({ error: "Email cannot be empty" }));
             return;
         }
+        await validateEmail(body.email);
 
         // Vérifier si l'email existe déjà
         const existingUser = await db.get("SELECT * FROM users WHERE email = ?", [body.email]);
@@ -131,6 +166,7 @@ async function updateUsers(req, res, id, body) {
             res.end(JSON.stringify({ error: "Email cannot be empty" }));
             return;
         }
+        await validateEmail(body.email);
 
         // Vérifier si l'utilisateur existe
         const user = await db.get("SELECT * FROM users WHERE id = ?", [id]);
@@ -193,4 +229,4 @@ async function deleteUsers(req, res, id) {
     }
 }
 
-export { getAllUsers, getUsersById, createUsers, updateUsers, deleteUsers };
+export { getAllUsers, getUsersById, createUsers, updateUsers, deleteUsers, getUserArticles };

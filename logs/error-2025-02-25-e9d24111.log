@@ -1,0 +1,4 @@
+=== ERROR LOG [e9d24111] ===
+Timestamp: 2025-02-25T07:55:44.659Z
+Message: SQLITE_ERROR: ambiguous column name: id
+Stack: Error: SQLITE_ERROR: ambiguous column name: id

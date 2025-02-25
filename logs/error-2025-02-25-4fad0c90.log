@@ -1,0 +1,4 @@
+=== ERROR LOG [4fad0c90] ===
+Timestamp: 2025-02-25T08:00:26.789Z
+Message: SQLITE_ERROR: near ".": syntax error
+Stack: Error: SQLITE_ERROR: near ".": syntax error

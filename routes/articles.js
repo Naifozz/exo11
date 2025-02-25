@@ -19,15 +19,6 @@ export async function handleArticleRequest(req, res) {
                 res.end(JSON.stringify({ error: "Invalid URL for POST request" }));
             }
             break;
-        case "PUT":
-            if (req.url.startsWith("/articles/")) {
-                const id = req.url.split("/")[2];
-                await updateArticle(req, res, id, req.body);
-            } else {
-                res.writeHead(405);
-                res.end(JSON.stringify({ error: "Invalid URL for PUT request" }));
-            }
-            break;
         case "DELETE":
             if (req.url.startsWith("/articles/")) {
                 const id = req.url.split("/")[2];
@@ -46,7 +37,9 @@ export async function handleArticleRequest(req, res) {
 async function getAllArticles(req, res) {
     try {
         const db = await openDb();
-        const articles = await db.all("SELECT * FROM articles");
+        const articles = await db.all(
+            "SELECT a.id as article_id, a.title, a.content, a.user_id, a.created_at, u.name, u.email FROM articles a JOIN users u ON a.user_id = u.id"
+        );
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(articles));
     } catch (error) {
@@ -59,7 +52,10 @@ async function getAllArticles(req, res) {
 async function getArticleById(req, res, id) {
     try {
         const db = await openDb();
-        const article = await db.get("SELECT * FROM articles WHERE id = ?", [id]);
+        const article = await db.get(
+            "SELECT a.id as article_id, a.title, a.content, a.user_id, a.created_at, u.name, u.email FROM articles a JOIN users u ON a.user_id = u.id WHERE a.id = ?",
+            [id]
+        );
         if (!article) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Article not found" }));
@@ -94,6 +90,11 @@ async function createArticle(req, res, body) {
             res.end(JSON.stringify({ error: "User ID is required" }));
             return;
         }
+        if (isNaN(Number(body.user_id)) || !Number.isInteger(Number(body.user_id))) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "User ID must be a valid integer" }));
+            return;
+        }
 
         // Vérifier si l'utilisateur existe
         const user = await db.get("SELECT * FROM users WHERE id = ?", [body.user_id]);
@@ -109,7 +110,10 @@ async function createArticle(req, res, body) {
         );
         const newId = result.lastID;
 
-        const createdArticle = await db.get("SELECT * FROM articles WHERE id = ?", [newId]);
+        const createdArticle = await db.get(
+            "SELECT a.id as article_id, a.title, a.content, a.user_id, a.created_at, u.name, u.email FROM articles a JOIN users u ON a.user_id = u.id WHERE a.id = ?",
+            [newId]
+        );
 
         res.writeHead(201, { "Content-Type": "application/json" });
         res.end(JSON.stringify(createdArticle));
