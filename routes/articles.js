@@ -1,5 +1,6 @@
 import { openDb } from "../utils/db.js";
 import { logError } from "../utils/logger.js";
+import { validateArticle } from "../utils/validator.js";
 
 export async function handleArticleRequest(req, res) {
     switch (req.method) {
@@ -17,6 +18,15 @@ export async function handleArticleRequest(req, res) {
             } else {
                 res.writeHead(405);
                 res.end(JSON.stringify({ error: "Invalid URL for POST request" }));
+            }
+            break;
+        case "PUT":
+            if (req.url.startsWith("/articles/")) {
+                const id = req.url.split("/")[2];
+                await updateArticle(req, res, id, req.body);
+            } else {
+                res.writeHead(405);
+                res.end(JSON.stringify({ error: "Invalid URL for PUT request" }));
             }
             break;
         case "DELETE":
@@ -85,6 +95,14 @@ async function createArticle(req, res, body) {
             res.end(JSON.stringify({ error: "Content cannot be empty" }));
             return;
         }
+        const errors = validateArticle(body);
+
+        if (errors) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: errors }));
+            return;
+        }
+
         if (!body.user_id) {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "User ID is required" }));
@@ -137,6 +155,14 @@ async function updateArticle(req, res, id, body) {
         if (!body.content || body.content.trim() === "") {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Content cannot be empty" }));
+            return;
+        }
+
+        const errors = validateArticle(body);
+
+        if (errors) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: errors }));
             return;
         }
         if (!body.user_id) {

@@ -12,5 +12,5 @@ export function validateArticle(article) {
     if (!article.content || article.content.length < 10) {
         errors.push("Content must be at least 10 characters");
     }
-    return errors;
+    return errors.length > 0 ? errors : null;
 }
