@@ -5,11 +5,17 @@ import { validateArticle } from "../utils/validator.js";
 export async function handleArticleRequest(req, res) {
     switch (req.method) {
         case "GET":
-            if (req.url === "/articles") {
-                await getAllArticles(req, res);
-            } else {
+            if (req.url.startsWith("/articles")) {
+                const url = new URL(req.url, `http://${req.headers.host}`);
+                const limit = parseInt(url.searchParams.get("limit"), 10) || 10;
+                const page = parseInt(url.searchParams.get("page"), 10) || 1;
+                await getAllArticles(req, res, limit, page);
+            } else if (req.url.startsWith("/articles/")) {
                 const id = req.url.split("/")[2];
                 await getArticleById(req, res, id);
+            } else {
+                res.writeHead(405);
+                res.end(JSON.stringify({ error: "Invalid URL for GET request" }));
             }
             break;
         case "POST":
@@ -44,14 +50,26 @@ export async function handleArticleRequest(req, res) {
     }
 }
 
-async function getAllArticles(req, res) {
+async function getAllArticles(req, res, limit, page) {
     try {
         const db = await openDb();
-        const articles = await db.all(
-            "SELECT a.id as article_id, a.title, a.content, a.user_id, a.created_at, u.name, u.email FROM articles a JOIN users u ON a.user_id = u.id"
-        );
+        console.log(page, limit);
+
+        const offset = (page - 1) * limit; // Calcul de l'offset en fonction de la page
+
+        const articles = await db.all("SELECT * FROM articles LIMIT ? OFFSET ?", [limit, offset]);
+
+        const total = await db.get("SELECT COUNT(*) as count FROM articles");
+
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(articles));
+        res.end(
+            JSON.stringify({
+                page,
+                limit,
+                total: total.count,
+                article: articles, // Assurez-vous que les articles sont bien renvoyés
+            })
+        );
     } catch (error) {
         await logError(error);
         res.writeHead(500, { "Content-Type": "application/json" });

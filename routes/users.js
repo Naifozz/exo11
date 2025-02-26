@@ -5,11 +5,17 @@ export async function handleUsersRequest(req, res) {
     switch (req.method) {
         case "GET":
             if (req.url === "/users") {
-                await getAllUsers(req, res);
-            } else if (req.url.match(/^\/users\/\d+\/articles$/)) {
+                const url = new URL(req.url, `http://${req.headers.host}`);
+                const limit = parseInt(url.searchParams.get("limit"), 10) || 10;
+                const page = parseInt(url.searchParams.get("page"), 10) || 1;
+                await getAllUsers(req, res, limit, page);
+            } else if (req.url.match(/^\/users\/\d+\/articles(\?.*)?$/)) {
+                const url = new URL(req.url, `http://${req.headers.host}`);
+                const limit = parseInt(url.searchParams.get("limit"), 10) || 10;
+                const page = parseInt(url.searchParams.get("offset"), 10) || 1;
                 const id = req.url.split("/")[2];
 
-                await getUserArticles(req, res, id);
+                await getUserArticles(req, res, id, limit, page);
             } else {
                 const id = req.url.split("/")[2];
                 await getUsersById(req, res, id);
@@ -47,12 +53,23 @@ export async function handleUsersRequest(req, res) {
     }
 }
 
-async function getAllUsers(req, res) {
+async function getAllUsers(req, res, limit, page) {
     try {
         const db = await openDb();
-        const users = await db.all("SELECT * FROM users");
+        const offset = (page - 1) * limit;
+
+        const users = await db.all("SELECT * FROM users LIMIT ? OFFSET ?", [limit, offset]);
+        const total = await db.get("SELECT COUNT(*) as count FROM users");
+
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(users));
+        res.end(
+            JSON.stringify({
+                page,
+                limit,
+                total: total.count,
+                users,
+            })
+        );
     } catch (error) {
         await logError(error);
         res.writeHead(500, { "Content-Type": "application/json" });
@@ -77,9 +94,12 @@ async function getUsersById(req, res, id) {
         res.end(JSON.stringify({ error: "Internal Server Error" }));
     }
 }
-async function getUserArticles(req, res, id) {
+async function getUserArticles(req, res, id, limit, page) {
     try {
+        console.log(limit, page);
         const db = await openDb();
+        const offset = (page - 1) * limit;
+
         const user = await db.get("SELECT * FROM users WHERE id = ?", [id]);
 
         if (!user) {
@@ -88,19 +108,24 @@ async function getUserArticles(req, res, id) {
             return;
         }
 
-        const userArticle = await db.all("SELECT * FROM articles WHERE user_id = ?", [id]);
+        const userArticles = await db.all(
+            "SELECT * FROM articles WHERE user_id = ? LIMIT ? OFFSET ?",
+            [id, limit, offset]
+        );
+        const total = await db.get("SELECT COUNT(*) as count FROM articles WHERE user_id = ?", [
+            id,
+        ]);
 
-        if (!userArticle) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ error: "Cet utilisateur n'a pas d'article" }));
-            return;
-        }
-        const response = {
-            user: user,
-            articles: userArticle,
-        };
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(response));
+        res.end(
+            JSON.stringify({
+                user,
+                page,
+                limit,
+                total: total.count,
+                articles: userArticles,
+            })
+        );
     } catch (error) {
         await logError(error);
         res.writeHead(500, { "Content-Type": "application/json" });
@@ -166,7 +191,12 @@ async function updateUsers(req, res, id, body) {
             res.end(JSON.stringify({ error: "Email cannot be empty" }));
             return;
         }
-        await validateEmail(body.email);
+        const regex = validateEmail(body.email);
+        if (!regex) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "EMAIL not valid" }));
+            return;
+        }
 
         // Vérifier si l'utilisateur existe
         const user = await db.get("SELECT * FROM users WHERE id = ?", [id]);

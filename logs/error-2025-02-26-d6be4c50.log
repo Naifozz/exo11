@@ -1,0 +1,7 @@
+=== ERROR LOG [d6be4c50] ===
+Timestamp: 2025-02-26T10:04:23.321Z
+Message: Cannot read properties of undefined (reading 'limit')
+Stack: TypeError: Cannot read properties of undefined (reading 'limit')
+    at getUserArticles (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/users.js:97:42)
+    at async handleUsersRequest (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/routes/users.js:18:17)
+    at async Server.<anonymous> (file:///C:/Users/DWWM/Desktop/code/Back/node/exo11/server.js:61:13)
